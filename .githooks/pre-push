@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -eu
+cd `dirname $0`
+
+echo -n 'Linting... '
+
+lint_result=$(swiftlint --reporter emoji --quiet --path ../ --config ../.swiftlint.yml)
+
+if [ -n "$lint_result" ]; then
+  # Lintで警告が見つかった場合、push操作を続けるかユーザに判断させる
+  echo 'Some issues found.'
+  echo '====================================='
+  echo "$lint_result" | sed -e "s/^/>> /"
+  echo '====================================='
+  echo ''
+  echo -n 'Push anyway?[y/N]: '
+
+  exec < /dev/tty
+  read YN
+
+  if [ "$YN" = "y" ]; then
+    echo 'Ok. continue.'
+  else
+    echo 'Push aborted.';
+    exit 1;
+  fi
+else
+  echo 'No issues found!'
+fi
+
+exit 0
